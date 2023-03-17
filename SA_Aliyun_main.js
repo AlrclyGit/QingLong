@@ -1,5 +1,7 @@
-// new Env("阿里云盘签到")
-// cron 0 6 * * * SA_Aliyun_main.js
+/**
+ * @new Env("阿里云盘签到")
+ * @cron 0 6 * * * SA_Aliyun_main.js
+*/
 
 
 const updateAccesssTokenURL = "https://auth.aliyundrive.com/v2/account/token"

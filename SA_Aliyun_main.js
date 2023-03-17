@@ -1,14 +1,14 @@
 /**
- * @name 阿里云盘签到
- * @author Alrcly Suzuki
- * @version 0.1
+ * name: Good
+ * cron: 3 4 * * *
  */
 
 const updateAccesssTokenURL = "https://auth.aliyundrive.com/v2/account/token"
 const signinURL = "https://member.aliyundrive.com/v1/activity/sign_in_list"
-const refreshToeknArry = process.env.aliyunID
+const refreshToeknArry = [process.env.aliyunID]
 
-const fetch = require("node-fetch")
+
+const axios = require("axios")
 
 !(async () => {
     for (const elem of refreshToeknArry) {
@@ -18,23 +18,24 @@ const fetch = require("node-fetch")
             'refresh_token': elem
         };
         //使用 refresh_token 更新 access_token
-        fetch(updateAccesssTokenURL, {
+        axios(updateAccesssTokenURL, {
             method: "POST",
-            body: JSON.stringify(queryBody),
+            data: JSON.stringify(queryBody),
             headers: { 'Content-Type': 'application/json' }
         }).then((res) => {
-            return res.json()
-        }).then((json) => {
-            let access_token = json.access_token;
+            let access_token = res.data.access_token;
+            console.log(access_token)
             //签到
-            fetch(signinURL, {
+            axios(signinURL, {
                 method: "POST",
-                body: JSON.stringify(queryBody),
+                data: JSON.stringify(queryBody),
                 headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
-            }).then((res) => {
-                return res.json()
             }).then((json) => {
-                console.log(json);
+                if (json.data.success == true) {
+                    console.log('完成签到');
+                } else {
+                    console.log(json.data);
+                }
             }).catch((err) => {
                 console.log(err)
             })

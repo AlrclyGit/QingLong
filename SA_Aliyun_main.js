@@ -7,7 +7,7 @@
 const updateAccesssTokenURL = "https://auth.aliyundrive.com/v2/account/token"
 const signinURL = "https://member.aliyundrive.com/v1/activity/sign_in_list"
 const refreshToeknArry = [process.env.aliyunID]
-
+const barkID = process.env.barkID
 
 const axios = require("axios")
 
@@ -36,18 +36,18 @@ const axios = require("axios")
                     console.log('完成签到');
                 } else {
                     console.log(json.data);
-                    axios.get('https://bark.alrcly.com/process.env.barkID/阿里云盘签到失败 A')
+                    axios.get(`https://bark.alrcly.com/${barkID}/阿里云盘签到失败 A`)
                 }
             }).catch((err) => {
                 console.log(err)
-                axios.get('https://bark.alrcly.com/process.env.barkID/阿里云盘签到失败 B')
+                axios.get(`https://bark.alrcly.com/${barkID}/阿里云盘签到失败 B`)
             })
         }).catch((err) => {
             console.log(err)
-            axios.get('https://bark.alrcly.com/process.env.barkID/阿里云盘签到失败 C')
+            axios.get(`https://bark.alrcly.com/${barkID}/阿里云盘签到失败 C`)
         })
     }
 })().catch((e) => {
     console.error(`❗️  运行错误！\n${e}`)
-    axios.get('https://bark.alrcly.com/process.env.barkID/阿里云盘签到失败 D')
+    axios.get(`https://bark.alrcly.com/${barkID}/阿里云盘签到失败 D`)
 }).finally()

@@ -1,6 +1,6 @@
 /**
  * @new Env("百度贴吧签到")
- * @cron 0 6 * * * SA_Aliyun_main.js
+ * @cron 0 4 * * * SA_Tieba_main.js
 */
 
 const axios = require("axios")
@@ -37,6 +37,7 @@ class Run {
                 this.getFollow()
             } else {
                 console.log(`获取 tbs 失败 -- ${res.data}`)
+                axios.get(`https://bark.alrcly.com/${barkID}/获取 tbs 失败`)
             }
         })
     }
@@ -57,8 +58,8 @@ class Run {
                     this.success.push(element.forum_name)
                 }
             });
-            console.log(this.follow)
-            console.log(this.success)
+            console.log(`需要签到的贴吧：${this.follow}`)
+            console.log(`已经签到的贴吧：${this.success}`)
             this.runSign()
         })
     }
@@ -87,11 +88,13 @@ class Run {
                     } else {
                         console.log(res.data)
                         console.log(`「${rotation}」签到失败`);
+                        axios.get(`https://bark.alrcly.com/${barkID}/「${rotation}」签到失败`)
                     }
                 })
             })
             flag--
         }
+        console.log('完成所有贴吧签到')
     }
 }
 

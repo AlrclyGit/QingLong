@@ -1,5 +1,5 @@
 /**
- * @new Env("阿里云盘签到")
+ * @new Env("俊介：阿里云盘签到")
  * @cron 0 6 * * * SA_Aliyun_main.js
 */
 
@@ -25,7 +25,7 @@ const axios = require("axios")
             headers: { 'Content-Type': 'application/json' }
         }).then((res) => {
             let access_token = res.data.access_token;
-            console.log(access_token)
+            console.log(`获取 access_token 成功`)
             //签到
             axios(signinURL, {
                 method: "POST",
@@ -33,7 +33,7 @@ const axios = require("axios")
                 headers: { 'Authorization': 'Bearer ' + access_token, 'Content-Type': 'application/json' }
             }).then((json) => {
                 if (json.data.success == true) {
-                    console.log('完成签到');
+                    console.log('完成阿里云盘签到');
                 } else {
                     console.log(json.data);
                     axios.get(`https://bark.alrcly.com/${barkID}/阿里云盘签到失败 A`)

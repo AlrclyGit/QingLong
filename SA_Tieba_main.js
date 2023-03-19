@@ -1,5 +1,5 @@
 /**
- * @new Env("百度贴吧签到")
+ * @new Env("俊介：百度贴吧签到")
  * @cron 0 4 * * * SA_Tieba_main.js
 */
 
@@ -32,11 +32,11 @@ class Run {
             }
         }).then((res) => {
             if (res.data.is_login === 1) {
-                console.log('获取 tbs 成功')
+                console.log('获取密钥成功')
                 this.tbs = res.data.tbs
                 this.getFollow()
             } else {
-                console.log(`获取 tbs 失败 -- ${res.data}`)
+                console.log(`获取密钥失败 -- ${res.data}`)
                 axios.get(`https://bark.alrcly.com/${barkID}/获取 tbs 失败`)
             }
         })
@@ -59,16 +59,16 @@ class Run {
                 }
             });
             console.log(`需要签到的贴吧：${this.follow}`)
-            console.log(`已经签到的贴吧：${this.success}`)
+            console.log(`已经签到的贴吧：${this.success ? this.success : '空'}`)
             this.runSign()
         })
     }
 
     runSign() {
-        let flag = 1
+        let flag = 5
         while (this.success.length < this.followNum && flag > 0) {
-            console.log(`"-----第 ${5 - flag + 1} 轮签到开始-----"`)
-            console.log(`还剩 ${this.followNum - this.success.length} 贴吧需要签到`)
+            console.log(`-----第 ${5 - flag + 1} 轮签到开始-----`)
+            console.log(`还剩 ${this.followNum - this.success.length} 个贴吧需要签到`)
             this.follow.forEach(element => {
                 let rotation = element.replace("%2B", "+");
                 let sign = md5(`kw=${rotation}tbs=${this.tbs}tiebaclient!!!`)
@@ -85,6 +85,9 @@ class Run {
                     if (res.data.error_code == 0) {
                         this.success.push(rotation);
                         console.log(`「${rotation}」签到成功`);
+                        if (this.follow == []) {
+                            console.log('完成所有贴吧签到')
+                        }
                     } else {
                         console.log(res.data)
                         console.log(`「${rotation}」签到失败`);
@@ -94,7 +97,6 @@ class Run {
             })
             flag--
         }
-        console.log('完成所有贴吧签到')
     }
 }
 

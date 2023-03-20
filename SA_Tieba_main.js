@@ -22,6 +22,8 @@ class Run {
         this.followNum = 0;
         // 登录令牌
         this.BDUSS = process.env.BDUSS
+        // barkID
+        this.barkID = process.env.barkID
     }
 
 
@@ -37,7 +39,7 @@ class Run {
                 this.getFollow()
             } else {
                 console.log(`获取密钥失败 -- ${res.data}`)
-                axios.get(`https://bark.alrcly.com/${barkID}/获取 tbs 失败`)
+                axios.get(`https://bark.alrcly.com/${this.barkID}/获取 tbs 失败`)
             }
         })
     }
@@ -59,7 +61,7 @@ class Run {
                 }
             });
             console.log(`需要签到的贴吧：${this.follow}`)
-            console.log(`已经签到的贴吧：${this.success ? this.success : '空'}`)
+            console.log(`已经签到的贴吧：${this.success}`)
             this.runSign()
         })
     }
@@ -72,6 +74,7 @@ class Run {
             this.follow.forEach(element => {
                 let rotation = element.replace("%2B", "+");
                 let sign = md5(`kw=${rotation}tbs=${this.tbs}tiebaclient!!!`)
+                console.log('「${rotation}」签到开始')
                 axios.get(this.SIGN_URL, {
                     headers: {
                         cookie: this.BDUSS
@@ -91,8 +94,11 @@ class Run {
                     } else {
                         console.log(res.data)
                         console.log(`「${rotation}」签到失败`);
-                        axios.get(`https://bark.alrcly.com/${barkID}/「${rotation}」签到失败`)
+                        axios.get(`https://bark.alrcly.com/${this.barkID}/「${rotation}」签到失败`)
                     }
+                }).catch((e) => {
+                    console.error(`❗️  运行错误！\n${e}`)
+                    axios.get(`https://bark.alrcly.com/${this.barkID}/百度贴吧签到失败 A`)
                 })
             })
             flag--

@@ -5,8 +5,12 @@
 
 const axios = require("axios")
 const md5 = require("blueimp-md5")
+
 class Run {
 
+    /** 
+     * 设置属性
+     */
     constructor() {
         // 获取用户所有关注贴吧
         this.LIKE_URL = "https://tieba.baidu.com/mo/q/newmoindex";
@@ -26,7 +30,16 @@ class Run {
         this.barkID = process.env.barkID
     }
 
+    /** 
+     * 主函数
+     */
+    main() {
+        this.getTbs()
+    }
 
+    /** 
+     * 获取 Tbs 令牌
+     */
     getTbs() {
         axios.get(this.TBS_URL, {
             headers: {
@@ -44,6 +57,9 @@ class Run {
         })
     }
 
+    /** 
+     * 获取贴吧列表
+     */
     getFollow() {
         axios.get(this.LIKE_URL, {
             headers: {
@@ -66,6 +82,9 @@ class Run {
         })
     }
 
+    /** 
+     * 签到
+     */
     runSign() {
         let flag = 5
         while (this.success.length < this.followNum && flag > 0) {
@@ -106,6 +125,5 @@ class Run {
     }
 }
 
-
-new Run().getTbs()
+new Run().main()
 

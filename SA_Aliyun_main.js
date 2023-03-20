@@ -22,13 +22,13 @@ class Run {
      */
     main() {
         for (const elem of this.refreshToeknArry) {
-            let queryBody = {
+            this.queryBody = {
                 'grant_type': 'refresh_token',
                 'refresh_token': elem
             };
             axios(this.updateAccesssTokenURL, {
                 method: "POST",
-                data: JSON.stringify(queryBody),
+                data: JSON.stringify(this.queryBody),
                 headers: { 'Content-Type': 'application/json' }
             }).then(res => {
                 if (res.data.status == "enabled") {

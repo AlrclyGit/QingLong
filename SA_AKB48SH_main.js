@@ -38,6 +38,7 @@ class Run {
                 axios.get(`https://bark.alrcly.com/${this.barkID}/AKB48TeamSH 有新闻！`)
             }
         }, () => {
+            console.log('创建数据库')
             this.setDB(this.pageTag, this.newPage)
         })
 
@@ -70,8 +71,9 @@ class Run {
                     if (err) throw err
                     console.log("写入成功")
                 })
-            }, () => {
-                fs.writeFile("./db.json", JSON.stringify({}), err => {
+            }, jsonDB => {
+                jsonDB[key] = value
+                fs.writeFile("./db.json", JSON.stringify(jsonDB), err => {
                     if (err) throw err
                     console.log("写入成功")
                 })

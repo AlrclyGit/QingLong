@@ -1,5 +1,5 @@
 /**
- * @new Env("俊介：AKB48TeamSH 新闻监控")
+ * @new Env("AKB48TeamSH 新闻监控")
  * @cron 0 0/1 * * * SA_AKB48SH_main.js
 */
 
@@ -14,7 +14,7 @@ class Run {
      */
     constructor() {
         this.pageUrl = 'http://www.akb48-china.com/official-notice/'
-        this.pageName = 'AKB48TeamSH'
+        this.pageTag = 'AKB48TeamSH'
         this.pageDom = '.myactivity'
         this.barkID = process.env.barkID
     }
@@ -23,43 +23,59 @@ class Run {
      * 主函数 
      */
     main() {
-        this.getNews()
+        axios(this.pageUrl, {
+            method: "GET",
+        }).then(res => {
+            this.newPage = cheerio.load(res.data)(this.pageDom).html()
+            return this.getJsonDB()
+        }).then(jsonDB => {
+            let oldPage = jsonDB[this.pageTag]
+            if (oldPage == this.newPage) {
+                console.log('无变化')
+            } else {
+                console.log('有变化')
+                this.setDB(this.pageTag, this.newPage)
+                // axios.get(`https://bark.alrcly.com/${this.barkID}/AKB48TeamSH 有新闻！`)
+            }
+        }, () => {
+            this.setDB(this.pageTag, this.newPage)
+        })
+
     }
 
     /**
-     * 获取新闻列表
+     * 读取数据库
      */
-    getNews() {
-        axios(this.pageUrl, {
-            method: "GET",
-        }).then((res) => {
-            this.newDB = cheerio.load(res.data)(this.pageDom).html()
-            fs.readFile("./db.json", (err, data) => {
+    getJsonDB() {
+        return new Promise((resolve, reject) => {
+            fs.readFile("./db.json", (err, DB) => {
                 if (err) {
-                    this.setDB(false)
+                    reject(err)
                 } else {
-                    let oldDB = JSON.parse(data)
-                    if (oldDB[this.pageName] == this.newDB) {
-                        console.log('无变化')
-                    } else {
-                        console.log('有变化')
-                        axios.get(`https://bark.alrcly.com/${this.barkID}/AKB48TeamSH 有新闻！`)
-                        this.setDB(oldDB)
-                    }
+                    resolve(JSON.parse(DB))
                 }
             });
         })
+
     }
 
     /**
      * 写入一条信息
      */
-    setDB(oldDB) {
-        oldDB = oldDB ? oldDB : {}
-        oldDB[this.pageName] = this.newDB
-        fs.writeFile("./db.json", JSON.stringify(oldDB), (err) => {
-            if (!err) console.log("写入成功");
-        });
+    setDB(key, value) {
+        this.getJsonDB()
+            .then(jsonDB => {
+                jsonDB[key] = value
+                fs.writeFile("./db.json", JSON.stringify(jsonDB), err => {
+                    if (err) throw err
+                    console.log("写入成功")
+                })
+            }, () => {
+                fs.writeFile("./db.json", JSON.stringify({}), err => {
+                    if (err) throw err
+                    console.log("写入成功")
+                })
+            })
     }
 }
 

@@ -21,55 +21,47 @@ class Run {
      * 主函数 
      */
     main() {
-        this.getToken()
-    }
-
-    /**
-     * 获取 accessToken
-     */
-    getToken() {
         for (const elem of this.refreshToeknArry) {
-            this.queryBody = {
+            let queryBody = {
                 'grant_type': 'refresh_token',
                 'refresh_token': elem
             };
             axios(this.updateAccesssTokenURL, {
                 method: "POST",
-                data: JSON.stringify(this.queryBody),
+                data: JSON.stringify(queryBody),
                 headers: { 'Content-Type': 'application/json' }
-            }).then((res) => {
+            }).then(res => {
                 if (res.data.status == "enabled") {
-                    this.access_token = res.data.access_token;
+                    let access_token = res.data.access_token;
                     console.log(`获取 access_token 成功`)
-                    this.signIn()
+                    return axios(this.signinURL, {
+                        method: "POST",
+                        data: JSON.stringify(this.queryBody),
+                        headers: {
+                            'Authorization': `Bearer ${access_token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
                 } else {
                     console.log(json.data);
-                    axios.get(`https://bark.alrcly.com/${this.barkID}/阿里云盘签到失败 A`)
+                    axios.get(`https://bark.alrcly.com/${this.barkID}/阿里云盘获取密钥失败`)
+                    process.exit()
                 }
+            }).then(res => {
+                if (res.data.success == true) {
+                    console.log('完成阿里云盘签到');
+                } else {
+                    console.log(res.data);
+                    axios.get(`https://bark.alrcly.com/${this.barkID}/阿里云盘签到失败`)
+                    process.exit()
+                }
+            }).catch(error => {
+                console.log(error);
+                axios.get(`https://bark.alrcly.com/${this.barkID}/阿里云盘网络请求到失败`)
             })
         }
     }
-
-    /** 
-     * 签到
-     */
-    signIn() {
-        axios(this.signinURL, {
-            method: "POST",
-            data: JSON.stringify(this.queryBody),
-            headers: {
-                'Authorization': `Bearer ${this.access_token}`,
-                'Content-Type': 'application/json'
-            }
-        }).then((res) => {
-            if (res.data.success == true) {
-                console.log('完成阿里云盘签到');
-            } else {
-                console.log(res.data);
-                axios.get(`https://bark.alrcly.com/${this.barkID}/阿里云盘签到失败 B`)
-            }
-        })
-    }
 }
+
 
 new Run().main()

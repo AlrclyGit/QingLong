@@ -35,7 +35,7 @@ class Run {
             } else {
                 console.log('有变化')
                 this.setDB(this.pageTag, this.newPage)
-                // axios.get(`https://bark.alrcly.com/${this.barkID}/AKB48TeamSH 有新闻！`)
+                axios.get(`https://bark.alrcly.com/${this.barkID}/AKB48TeamSH 有新闻！`)
             }
         }, () => {
             this.setDB(this.pageTag, this.newPage)

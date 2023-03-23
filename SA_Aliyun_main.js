@@ -1,6 +1,6 @@
 /**
  * @new Env("俊介：阿里云盘签到")
- * @cron 0 6 * * * SA_Aliyun_main.js
+ * @cron 0 3 * * * SA_Aliyun_main.js
 */
 
 const axios = require("axios")

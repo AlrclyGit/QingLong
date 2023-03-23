@@ -1,6 +1,6 @@
 /**
  * @new Env("俊介：百度贴吧签到")
- * @cron 0 8 * * * SA_Tieba_main.js
+ * @cron 0 4 * * * SA_Tieba_main.js
 */
 
 const axios = require("axios")
@@ -86,7 +86,7 @@ class Run {
                             if (res.data.error_code == 0) {
                                 this.successSignIn.push(rotation);
                                 console.log(`「${rotation}」签到成功`);
-                                if (this.follow == []) console.log('完成所有贴吧签到')
+                                if (this.notSignIn.length == 0) console.log(`-----签到结束-----`)
                             } else {
                                 console.log(res)
                                 console.log(`「${rotation.data}」签到失败`);
@@ -96,7 +96,7 @@ class Run {
                             console.error(`❗️  运行错误！\n${e}`)
                             axios.get(`https://bark.alrcly.com/${this.barkID}/百度贴吧签到运行错误！`)
                         })
-                    }, 20000 * i)
+                    }, 12345 * i)
                 }
             }
         })

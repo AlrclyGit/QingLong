@@ -86,7 +86,7 @@ class Run {
                             if (res.data.error_code == 0) {
                                 this.successSignIn.push(rotation);
                                 console.log(`「${rotation}」签到成功`);
-                                if (this.notSignIn.length == 0) console.log(`-----签到结束-----`)
+                                if (this.successSignIn.length == this.signInNum) console.log(`-----签到结束-----`)
                             } else {
                                 console.log(res)
                                 console.log(`「${rotation.data}」签到失败`);

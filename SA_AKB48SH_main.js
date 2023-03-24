@@ -35,13 +35,47 @@ class Run {
             } else {
                 console.log('有变化')
                 this.setDB(this.pageTag, this.newPage)
-                axios.get(`https://bark.alrcly.com/${this.barkID}/AKB48TeamSH 有新闻！`)
+                axios.get(`https://bark.alrcly.com/${this.barkID}/${this.pageTag}监控页面发生了变化！`)
             }
-        }, () => {
-            console.log('创建数据库')
-            this.setDB(this.pageTag, this.newPage)
+        }).catch(error => {
+            if (error.code = 'ENOENT') {
+                this.setDB(this.pageTag, this.newPage)
+                axios.get(`https://bark.alrcly.com/${this.barkID}/${this.pageTag}监控页面发生了变化！`)
+            } else {
+                console.log(error.message)
+            }
         })
+    }
 
+    /**
+      * 写入一条信息
+      */
+    setDB(key, value) {
+        this.getJsonDB().then(jsonDB => {
+            jsonDB[key] = value
+            return this.setJsontDB(jsonDB)
+        }, () => {
+            const jsonDB = new Object
+            jsonDB[key] = value
+            console.log('第一次使用数据库')
+            return this.setJsontDB(jsonDB)
+        }).then(() => {
+            console.log('写入数据成功')
+        }).catch(error => {
+            console.log(error.message)
+        })
+    }
+
+    setJsontDB(jsonDB) {
+        return new Promise((resolve, reject) => {
+            fs.writeFile("./db.json", JSON.stringify(jsonDB), 'utf8', err => {
+                if (err) {
+                    reject(err)
+                } else {
+                    resolve()
+                }
+            })
+        })
     }
 
     /**
@@ -49,36 +83,16 @@ class Run {
      */
     getJsonDB() {
         return new Promise((resolve, reject) => {
-            fs.readFile("./db.json", (err, DB) => {
+            fs.readFile("./db.json", 'utf8', (err, data) => {
                 if (err) {
                     reject(err)
                 } else {
-                    resolve(JSON.parse(DB))
+                    resolve(JSON.parse(data))
                 }
             });
         })
-
     }
 
-    /**
-     * 写入一条信息
-     */
-    setDB(key, value) {
-        this.getJsonDB()
-            .then(jsonDB => {
-                jsonDB[key] = value
-                fs.writeFile("./db.json", JSON.stringify(jsonDB), err => {
-                    if (err) throw err
-                    console.log("写入成功")
-                })
-            }, jsonDB => {
-                jsonDB[key] = value
-                fs.writeFile("./db.json", JSON.stringify(jsonDB), err => {
-                    if (err) throw err
-                    console.log("写入成功")
-                })
-            })
-    }
 }
 
 new Run().main()

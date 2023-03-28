@@ -66,6 +66,9 @@ class Run {
         })
     }
 
+    /**
+     * 写入数据库
+     */
     setJsontDB(jsonDB) {
         return new Promise((resolve, reject) => {
             fs.writeFile("./db.json", JSON.stringify(jsonDB), 'utf8', err => {

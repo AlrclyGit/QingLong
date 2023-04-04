@@ -15,7 +15,7 @@ class Run {
     constructor() {
         this.pageUrl = 'http://www.akb48-china.com/official-notice/'
         this.pageTag = 'AKB48TeamSH'
-        this.pageDom = '.myactivity'
+        this.pageDom = '.myactivity > ul > li:nth-child(1) > div.li-right > span'
         this.barkID = process.env.barkID
     }
 

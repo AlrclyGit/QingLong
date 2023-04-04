@@ -1,6 +1,6 @@
 /**
  * @new Env("AKB48TeamSH 新闻监控")
- * @cron 0 0/1 * * * SA_AKB48SH_main.js
+ * @cron 1 0/1 * * * SA_AKB48SH_main.js
 */
 
 const axios = require("axios")

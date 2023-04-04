@@ -1,7 +1,8 @@
-/**
- * @new Env("百度吃瓜页面监控")
- * @cron 0/5 * * * * SA_ChiGua_main.js
-*/
+```
+new Env("百度吃瓜页面监控")
+cron */1 * * * *
+now
+```
 
 const axios = require("axios")
 const fs = require("fs");

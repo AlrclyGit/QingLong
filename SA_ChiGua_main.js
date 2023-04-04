@@ -1,7 +1,6 @@
 /**
- * @new Env("百度吃瓜页面监控")
- * @cron 0/1 * * * * SA_ChiGua_main.js
- * @now
+ * @new Env("俊介：百度吃瓜页面监控")
+ * @cron 0/5 * * * * SA_ChiGua_main.js
 */
 
 const axios = require("axios")
@@ -27,7 +26,11 @@ class Run {
         axios(this.pageUrl, {
             method: "GET",
         }).then(res => {
-            this.newPage = cheerio.load(res.data)(this.pageDom).html()
+            let $ = cheerio.load(res.data)
+            this.newPage = $(this.pageDom).html()
+            let item = $('.list .content-link').first()
+            this.title = item.text().trim()
+            this.url = item.attr('href')
             return this.getJsonDB()
         }).then(jsonDB => {
             let oldPage = jsonDB[this.pageTag]
@@ -36,12 +39,12 @@ class Run {
             } else {
                 console.log('有变化')
                 this.setDB(this.pageTag, this.newPage)
-                axios.get(`https://bark.alrcly.com/${this.barkID}/${this.pageTag}监控页面发生了变化！`)
+                axios.get(`https://bark.alrcly.com/${this.barkID}/${this.title}/${this.rul}`)
             }
         }).catch(error => {
             if (error.code = 'ENOENT') {
                 this.setDB(this.pageTag, this.newPage)
-                axios.get(`https://bark.alrcly.com/${this.barkID}/${this.pageTag}监控页面发生了变化！`)
+                axios.get(`https://bark.alrcly.com/${this.barkID}/${this.title}/${this.url}`)
             } else {
                 console.log(error.message)
             }

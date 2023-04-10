@@ -1,5 +1,5 @@
 /**
- * @new Env("俊介：AKB48 甜品队新闻监控")
+ * @new Env("俊介：AKB48 社会队新闻监控")
  * @cron 1 0/1 * * * SA_AKB48SH_main.js
 */
 

@@ -40,35 +40,11 @@ class Run {
                 console.log('有变化')
                 this.setDB(this.pageTag, this.newPage)
                 axios.get(`https://bark.alrcly.com/${this.barkID}/${this.title}?url=${this.url}`)
-                axios(`https://oapi.dingtalk.com/robot/send?access_token=f483aa47d03d8eccf0ded6ddebe77f81795613578859123d8c544e6805197116`, {
-                    method: "POST",
-                    headers: { 'Content-Type': 'application/json' },
-                    data: JSON.stringify({
-                        'msgtype': 'link',
-                        'link': {
-                            "title": `(吃瓜) ${this.title}`,
-                            "text": '这是必填字段',
-                            "messageUrl": `${this.url}`
-                        }
-                    })
-                })
             }
         }).catch(error => {
             if (error.code = 'ENOENT') {
                 this.setDB(this.pageTag, this.newPage)
                 axios.get(`https://bark.alrcly.com/${this.barkID}/${this.title}?url=${this.url}`)
-                axios(`https://oapi.dingtalk.com/robot/send?access_token=f483aa47d03d8eccf0ded6ddebe77f81795613578859123d8c544e6805197116`, {
-                    method: "POST",
-                    headers: { 'Content-Type': 'application/json' },
-                    data: JSON.stringify({
-                        'msgtype': 'link',
-                        'link': {
-                            "title": `(吃瓜) ${this.title}`,
-                            "text": '这是必填字段',
-                            "messageUrl": `${this.url}`
-                        }
-                    })
-                })
             } else {
                 console.log(error.message)
             }

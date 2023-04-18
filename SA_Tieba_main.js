@@ -25,7 +25,7 @@ class Run {
         // 用户所关注的贴吧数量
         this.signInNum = 0
         // 登录令牌
-        this.BDUSS = process.env.BDUSS
+        this.tiebaCookie = process.env.tieBa
         // barkID
         this.barkID = process.env.barkID
     }
@@ -36,7 +36,7 @@ class Run {
     main() {
         axios.get(this.TBS_URL, {
             headers: {
-                cookie: this.BDUSS
+                cookie: this.tiebaCookie
             }
         }).then(res => {
             if (res.data.is_login === 1) {
@@ -44,7 +44,7 @@ class Run {
                 this.tbs = res.data.tbs
                 return axios.get(this.LIKE_URL, {
                     headers: {
-                        cookie: this.BDUSS
+                        cookie: this.tiebaCookie
                     }
                 })
             } else {
@@ -75,7 +75,7 @@ class Run {
                         console.log(`「${rotation}」签到开始`)
                         axios.get(this.SIGN_URL, {
                             headers: {
-                                cookie: this.BDUSS
+                                cookie: this.tiebaCookie
                             },
                             params: {
                                 kw: this.notSignIn[i],

@@ -15,7 +15,6 @@ class Run {
     constructor() {
         this.pageUrl = 'http://www.akb48-china.com/official-notice/'
         this.pageTag = 'AKB48TeamSH'
-        this.pageDom = '.myactivity > ul > li:nth-child(1) > div.li-right > span'
         this.barkID = process.env.barkID
     }
 
@@ -26,7 +25,7 @@ class Run {
         axios(this.pageUrl, {
             method: "GET",
         }).then(res => {
-            this.newPage = cheerio.load(res.data)(this.pageDom).html()
+            this.newPage = cheerio.load(res.data)('.myactivity > ul > li:nth-child(1) > div.li-right > span').html()
             return this.getJsonDB()
         }).then(jsonDB => {
             let oldPage = jsonDB[this.pageTag]

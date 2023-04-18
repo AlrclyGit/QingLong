@@ -13,9 +13,8 @@ class Run {
      * 设置属性 
      */
     constructor() {
-        this.pageUrl = 'https://events.baidu.com/search/vein?platform=pc&record_id=20786'
+        this.pageUrl = process.env.chiGua
         this.pageTag = 'ChiGua'
-        this.pageDom = '.create-time'
         this.barkID = process.env.barkID
     }
 
@@ -23,32 +22,37 @@ class Run {
      * 主函数 
      */
     main() {
-        axios(this.pageUrl, {
-            method: "GET",
-        }).then(res => {
-            let $ = cheerio.load(res.data)
-            this.newPage = $(this.pageDom).html()
-            let item = $('.list .content-link').first()
-            this.title = item.text().trim()
-            this.url = item.attr('href')
-            return this.getJsonDB()
-        }).then(jsonDB => {
-            let oldPage = jsonDB[this.pageTag]
-            if (oldPage == this.newPage) {
-                console.log('无变化')
-            } else {
-                console.log('有变化')
-                this.setDB(this.pageTag, this.newPage)
-                axios.get(`https://bark.alrcly.com/${this.barkID}/${this.title}?url=${this.url}`)
-            }
-        }).catch(error => {
-            if (error.code = 'ENOENT') {
-                this.setDB(this.pageTag, this.newPage)
-                axios.get(`https://bark.alrcly.com/${this.barkID}/${this.title}?url=${this.url}`)
-            } else {
-                console.log(error.message)
-            }
-        })
+        for (let i = 0; i < this.pageUrl.length; i++) {
+            axios(this.pageUrl[i], {
+                method: "GET",
+            }).then(res => {
+                let $ = cheerio.load(res.data)
+                this.newPage = $('.create-time').text()
+                let itemTitle = $('.title').text()
+                this.itemPageTag = `${this.pageTag}:${itemTitle}`
+                let item = $('.list .content-link').first()
+                this.title = item.text().trim()
+                this.url = item.attr('href')
+                return this.getJsonDB()
+            }).then(jsonDB => {
+                let oldPage = jsonDB[this.itemPageTag]
+                if (oldPage == this.newPage) {
+                    console.log('无变化')
+                } else {
+                    console.log('有变化')
+                    this.setDB(this.itemPageTag, this.newPage)
+                    axios.get(`https://bark.alrcly.com/${this.barkID}/${this.title}?url=${this.url}`)
+                }
+            }).catch(error => {
+                if (error.code = 'ENOENT') {
+                    this.setDB(this.itemPageTag, this.newPage)
+                    axios.get(`https://bark.alrcly.com/${this.barkID}/${this.title}?url=${this.url}`)
+                } else {
+                    console.log(error.message)
+                }
+            })
+        }
+
     }
 
     /**

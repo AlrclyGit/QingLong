@@ -13,7 +13,7 @@ class Run {
      * 设置属性 
      */
     constructor() {
-        this.pageUrl = process.env.chiGua
+        this.pageUrls = process.env.chiGua
         this.pageTag = 'ChiGua'
         this.barkID = process.env.barkID
     }
@@ -22,8 +22,9 @@ class Run {
      * 主函数 
      */
     main() {
-        for (let i = 0; i < this.pageUrl.length; i++) {
-            axios(this.pageUrl[i], {
+        const pageUrls = this.pageUrls.split(';')
+        for (let i = 0; i < pageUrls.length; i++) {
+            axios(pageUrls[i], {
                 method: "GET",
             }).then(res => {
                 let $ = cheerio.load(res.data)

@@ -1,6 +1,6 @@
 /**
- * @new Env("俊介：百度吃瓜页面监控")
- * @cron 0/5 * * * * SA_ChiGua_main.js
+ * @new Env("俊介：AKB48 甜品队新闻监控")
+ * @cron 1 0/1 * * * SA_AKB48TP_main.js
 */
 
 const axios = require("axios")
@@ -13,47 +13,48 @@ class Run {
      * 设置属性 
      */
     constructor() {
-        this.pageUrls = process.env.chiGua
-        this.pageTag = 'ChiGua'
+        this.pageUrl = 'https://www.akb48teamtp.com/blogs/news'
+        this.pageTag = 'AKB48TeamTP'
         this.barkID = process.env.barkID
+        this.barkID = 'iyeuCNEfFuyaX4KHzemdoJ'
     }
 
     /**
      * 主函数 
      */
     main() {
-        const pageUrls = this.pageUrls.split(';')
-        for (let i = 0; i < pageUrls.length; i++) {
-            axios(pageUrls[i], {
-                method: "GET",
-            }).then(res => {
-                let $ = cheerio.load(res.data)
-                this.newPage = $('.create-time').text()
-                let itemTitle = $('.title').text()
-                this.itemPageTag = `${this.pageTag}:${itemTitle}`
-                let item = $('.list .content-link').first()
-                this.title = item.text().trim()
-                this.url = item.attr('href')
+        axios.get(this.pageUrl)
+            .then(response => {
+                const $ = cheerio.load(response.data)
+                this.title = $('#blog_articles > div:nth-child(4) > p > a').html().trim()
+                let url = $('#blog_articles > div:nth-child(4) > p > a').attr('href')
+                this.url = `https://www.akb48teamtp.com${url}`
                 return this.getJsonDB()
             }).then(jsonDB => {
-                let oldPage = jsonDB[this.itemPageTag]
-                if (oldPage == this.newPage) {
-                    console.log('无变化')
+                let oldPage = jsonDB[this.pageTag]
+                if (oldPage == this.title) {
+                    console.log('无变化')z
                 } else {
                     console.log('有变化')
-                    this.setDB(this.itemPageTag, this.newPage)
-                    axios.get(`https://bark.alrcly.com/${this.barkID}/${this.title}?url=${this.url}`)
+                    this.setDB(this.pageTag, this.title)
+                    axios.post(`https://bark.alrcly.com/${this.barkID}/`, {
+                        'title': 'AKB48 甜品队新闻',
+                        'body': this.title,
+                        'url': this.url
+                    })
                 }
             }).catch(error => {
                 if (error.code = 'ENOENT') {
-                    this.setDB(this.itemPageTag, this.newPage)
-                    axios.get(`https://bark.alrcly.com/${this.barkID}/${this.title}?url=${this.url}`)
+                    this.setDB(this.pageTag, this.title)
+                    axios.post(`https://bark.alrcly.com/${this.barkID}/`, {
+                        'title': 'AKB48 甜品队新闻',
+                        'body': this.title,
+                        'url': this.url
+                    })
                 } else {
                     console.log(error.message)
                 }
             })
-        }
-
     }
 
     /**

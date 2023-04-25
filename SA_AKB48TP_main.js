@@ -16,7 +16,6 @@ class Run {
         this.pageUrl = 'https://www.akb48teamtp.com/blogs/news'
         this.pageTag = 'AKB48TeamTP'
         this.barkID = process.env.barkID
-        this.barkID = 'iyeuCNEfFuyaX4KHzemdoJ'
     }
 
     /**
@@ -33,7 +32,7 @@ class Run {
             }).then(jsonDB => {
                 let oldPage = jsonDB[this.pageTag]
                 if (oldPage == this.title) {
-                    console.log('无变化')z
+                    console.log('无变化')
                 } else {
                     console.log('有变化')
                     this.setDB(this.pageTag, this.title)

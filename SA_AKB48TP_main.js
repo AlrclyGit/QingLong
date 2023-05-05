@@ -4,7 +4,7 @@
 */
 
 const axios = require("axios")
-const fs = require("fs");
+const fs = require("fs")
 const cheerio = require("cheerio")
 
 class Run {
@@ -101,7 +101,7 @@ class Run {
                 } else {
                     resolve(JSON.parse(data))
                 }
-            });
+            })
         })
     }
 

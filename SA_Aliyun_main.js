@@ -43,20 +43,20 @@ class Run {
                         }
                     })
                 } else {
-                    console.log(json.data);
+                    console.log(json.data)
                     axios.get(`https://bark.alrcly.com/${this.barkID}/阿里云盘获取密钥失败`)
                     process.exit()
                 }
             }).then(res => {
                 if (res.data.success == true) {
-                    console.log('完成阿里云盘签到');
+                    console.log('完成阿里云盘签到')
                 } else {
-                    console.log(res.data);
+                    console.log(res.data)
                     axios.get(`https://bark.alrcly.com/${this.barkID}/阿里云盘签到失败`)
                     process.exit()
                 }
             }).catch(error => {
-                console.log(error);
+                console.log(error)
                 axios.get(`https://bark.alrcly.com/${this.barkID}/阿里云盘网络请求到失败`)
             })
         }

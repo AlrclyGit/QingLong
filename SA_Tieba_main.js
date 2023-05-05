@@ -62,7 +62,7 @@ class Run {
                 } else {
                     this.successSignIn.push(element.forum_name)
                 }
-            });
+            })
             console.log(`需要签到的贴吧：${this.notSignIn}`)
             console.log(`已经签到的贴吧：${this.successSignIn}`)
             console.log(`还剩 ${this.signInNum - this.successSignIn.length} 个贴吧需要签到`)
@@ -70,7 +70,7 @@ class Run {
                 console.log(`-----签到开始-----`)
                 for (let i = 0; i < this.notSignIn.length; i++) {
                     setTimeout(() => {
-                        let rotation = this.notSignIn[i].replace("%2B", "+");
+                        let rotation = this.notSignIn[i].replace("%2B", "+")
                         let sign = md5(`kw=${rotation}tbs=${this.tbs}tiebaclient!!!`)
                         console.log(`「${rotation}」签到开始`)
                         axios.get(this.SIGN_URL, {
@@ -84,12 +84,12 @@ class Run {
                             }
                         }).then((res) => {
                             if (res.data.error_code == 0) {
-                                this.successSignIn.push(rotation);
-                                console.log(`「${rotation}」签到成功`);
+                                this.successSignIn.push(rotation)
+                                console.log(`「${rotation}」签到成功`)
                                 if (this.successSignIn.length == this.signInNum) console.log(`-----签到结束-----`)
                             } else {
                                 console.log(res)
-                                console.log(`「${rotation.data}」签到失败`);
+                                console.log(`「${rotation.data}」签到失败`)
                                 axios.get(`https://bark.alrcly.com/${this.barkID}/「${rotation}」签到失败`)
                             }
                         }).catch((e) => {

@@ -11,9 +11,6 @@ let pageTag = 'Title'
 let newArray = []
 let barkID = process.env.barkID
 
-barkID = 'iyeuCNEfFuyaX4KHzemdoJ'
-
-
 async function getTitles(urls) {
     const titles = []
     for (const url of urls) {

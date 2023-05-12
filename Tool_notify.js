@@ -1,7 +1,6 @@
 const axios = require("axios")
 
 fsNotifyID = process.env.FSKEY
-fsNotifyID = `7f74fbab-24ac-4b03-9aa2-d2f82e668bf1`
 
 function send(title, text = null, url = null) {
     let data = ''

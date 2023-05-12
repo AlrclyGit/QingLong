@@ -6,6 +6,7 @@
 const axios = require("axios")
 const fs = require("fs")
 const cheerio = require("cheerio")
+const notify = require("./SA_Notify_tool")
 
 class Run {
 
@@ -36,20 +37,12 @@ class Run {
                 } else {
                     console.log('有变化')
                     this.setDB(this.pageTag, this.title)
-                    axios.post(`https://bark.alrcly.com/${this.barkID}/`, {
-                        'title': 'AKB48 甜品队新闻',
-                        'body': this.title,
-                        'url': this.url
-                    })
+                    notify('AKB48 甜品队新闻', this.title, this.url)
                 }
             }).catch(error => {
                 if (error.code = 'ENOENT') {
                     this.setDB(this.pageTag, this.title)
-                    axios.post(`https://bark.alrcly.com/${this.barkID}/`, {
-                        'title': 'AKB48 甜品队新闻',
-                        'body': this.title,
-                        'url': this.url
-                    })
+                    notify('AKB48 甜品队新闻', this.title, this.url)
                 } else {
                     console.log(error.message)
                 }

@@ -1,11 +1,12 @@
 /**
  * @new Env("俊介：网站组标题监控")
- * @cron 0/15 * * * * SA_Title_main.js
+ * @cron 1 0/15 * * * SA_Title_main.js
 */
 
 const axios = require('axios')
 const fs = require("fs")
 const cheerio = require('cheerio')
+const notify = require("./SA_Notify_tool")
 
 let pageTag = 'Title'
 let newArray = []
@@ -74,17 +75,14 @@ getTitles(urls).then(arr => {
         console.log('无变化')
     } else {
         console.log('有变化')
+        console.table(newArray)
         setDB(pageTag, newArray)
-        axios.post(`https://bark.alrcly.com/${barkID}/`, {
-            'title': '网站标题发生了变化'
-        })
+        notify('网站标题发生了变化')
     }
 }).catch(error => {
     if (error.code = 'ENOENT') {
         setDB(pageTag, newArray)
-        axios.post(`https://bark.alrcly.com/${barkID}/`, {
-            'title': '网站标题发生了变化'
-        })
+        notify('网站标题发生了变化')
     } else {
         console.log(error.message)
     }

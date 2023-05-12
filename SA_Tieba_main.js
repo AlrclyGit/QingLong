@@ -5,6 +5,7 @@
 
 const axios = require("axios")
 const md5 = require("blueimp-md5")
+const notify = require("./SA_Notify_tool")
 
 class Run {
 
@@ -49,7 +50,7 @@ class Run {
                 })
             } else {
                 console.log(`获取密钥失败 -- ${res}`)
-                axios.get(`https://bark.alrcly.com/${this.barkID}/获取 tbs 失败`)
+                notify('获取 tbs 失败')
                 process.exit()
             }
         }).then(res => {
@@ -90,11 +91,12 @@ class Run {
                             } else {
                                 console.log(res)
                                 console.log(`「${rotation.data}」签到失败`)
-                                axios.get(`https://bark.alrcly.com/${this.barkID}/「${rotation}」签到失败`)
+                                notify('「${rotation}」签到失败')
+                                axios.get(`https://bark.alrcly.com/${this.barkID}/`)
                             }
                         }).catch((e) => {
                             console.error(`❗️  运行错误！\n${e}`)
-                            axios.get(`https://bark.alrcly.com/${this.barkID}/百度贴吧签到运行错误！`)
+                            notify('百度贴吧签到运行错误！')
                         })
                     }, 12345 * i)
                 }

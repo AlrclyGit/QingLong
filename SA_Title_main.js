@@ -77,12 +77,12 @@ getTitles(urls).then(arr => {
         console.log('有变化')
         console.table(newArray)
         setDB(pageTag, newArray)
-        notify('网站标题发生了变化')
+        notify('欧名网站标题发生了变化')
     }
 }).catch(error => {
     if (error.code = 'ENOENT') {
         setDB(pageTag, newArray)
-        notify('网站标题发生了变化')
+        notify('欧名网站标题发生了变化')
     } else {
         console.log(error.message)
     }

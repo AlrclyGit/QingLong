@@ -50,7 +50,7 @@ class Run {
                 })
             } else {
                 console.log(`获取密钥失败 -- ${res}`)
-                notify('获取 tbs 失败')
+                notify('百度贴吧签到', '获取 tbs 失败')
                 process.exit()
             }
         }).then(res => {
@@ -90,13 +90,13 @@ class Run {
                                 if (this.successSignIn.length == this.signInNum) console.log(`-----签到结束-----`)
                             } else {
                                 console.log(res)
-                                console.log(`「${rotation.data}」签到失败`)
-                                notify('「${rotation}」签到失败')
+                                console.log(`「${rotation}」签到失败`)
+                                notify('百度贴吧签到', `「${rotation}」签到失败`)
                                 axios.get(`https://bark.alrcly.com/${this.barkID}/`)
                             }
                         }).catch((e) => {
                             console.error(`❗️  运行错误！\n${e}`)
-                            notify('百度贴吧签到运行错误！')
+                            notify('百度贴吧签到', '百度贴吧签到运行错误！')
                         })
                     }, 12345 * i)
                 }

@@ -45,7 +45,7 @@ class Run {
                     })
                 } else {
                     console.log(json.data)
-                    notify('阿里云盘获取密钥失败')
+                    notify('阿里云盘', '阿里云盘获取密钥失败')
                     process.exit()
                 }
             }).then(res => {
@@ -53,12 +53,12 @@ class Run {
                     console.log('完成阿里云盘签到')
                 } else {
                     console.log(res.data)
-                    notify('阿里云盘签到失败')
+                    notify('阿里云盘', '阿里云盘签到失败')
                     process.exit()
                 }
             }).catch(error => {
                 console.log(error)
-                notify('阿里云盘网络请求到失败')
+                notify('阿里云盘', '阿里云盘网络请求到失败')
             })
         }
     }

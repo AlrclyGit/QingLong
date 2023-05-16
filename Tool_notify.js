@@ -1,63 +1,25 @@
 const axios = require('axios')
 
-fsNotifyID = process.env.FSKEY
+barkID = process.env.BARKID
+barkID = `iyeuCNEfFuyaX4KHzemdoJ`
 
 function send(title, text = null, url = null) {
     let data = ''
     if (text == null) {
-        data = {
-            'msg_type': 'text',
-            'content': {
-                'text': title
-            }
-        }
+        data = { "body": title }
     } else if (url == null) {
         data = {
-            'msg_type': 'post',
-            'content': {
-                'post': {
-                    'zh_cn': {
-                        'title': title,
-                        'content': [
-                            [
-                                {
-                                    'tag': 'text',
-                                    'text': text
-                                },
-                            ]
-                        ]
-                    }
-                }
-
-            }
+            'title': title,
+            'body': text
         }
     } else {
         data = {
-            'msg_type': 'post',
-            'content': {
-                'post': {
-                    'zh_cn': {
-                        'title': title,
-                        'content': [
-                            [
-                                {
-                                    'tag': 'text',
-                                    'text': text
-                                },
-                                {
-                                    'tag': 'a',
-                                    'text': '查看',
-                                    'href': url
-                                }
-                            ]
-                        ]
-                    }
-                }
-
-            }
+            'title': title,
+            'body': text,
+            'url': url
         }
     }
-    let notifyUrl = `https://open.feishu.cn/open-apis/bot/v2/hook/${fsNotifyID}`
+    let notifyUrl = `https://bark.alrcly.com/${barkID}`
     let config = {
         headers: {
             'Content-Type': 'application/json'

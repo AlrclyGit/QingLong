@@ -46,6 +46,7 @@ urls = [
     'https://lv.onyxcina.com',
     'https://ldv.onyxcina.com',
     'https://bs.onyxcina.com',
+    'https://regents.onyxcina.com/',
     'https://www.eonyx.cn',
     'https://www.ifhsc.com',
     'https://www.scuolaciao.com',

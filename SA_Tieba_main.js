@@ -1,6 +1,6 @@
 /**
  * @new Env("俊介：百度贴吧签到")
- * @cron 1 4 * * * SA_Tieba_main.js
+ * @cron 1 14 * * * SA_Tieba_main.js
 */
 
 const axios = require("axios")

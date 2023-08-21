@@ -27,8 +27,6 @@ class Run {
         this.signInNum = 0
         // 登录令牌
         this.tiebaCookie = process.env.tieBa
-        // barkID
-        this.barkID = process.env.barkID
     }
 
     /** 

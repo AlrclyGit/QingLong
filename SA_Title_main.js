@@ -10,7 +10,6 @@ const notify = require("./Tool_notify")
 
 let pageTag = 'Title'
 let newArray = []
-let barkID = process.env.barkID
 
 async function getTitles(urls) {
     const titles = []
@@ -76,7 +75,7 @@ getTitles(urls).then(arr => {
         console.log('无变化')
     } else {
         console.log('有变化')
-        console.table(newArray)
+        console.log(newArray)
         setDB(pageTag, newArray)
         notify('欧名网站标题发生了变化')
     }

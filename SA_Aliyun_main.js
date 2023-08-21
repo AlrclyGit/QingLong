@@ -15,7 +15,6 @@ class Run {
         this.refreshToeknArry = [process.env.aliyunID]
         this.updateAccesssTokenURL = "https://auth.aliyundrive.com/v2/account/token"
         this.signinURL = "https://member.aliyundrive.com/v1/activity/sign_in_list"
-        this.barkID = process.env.barkID
     }
 
     /**

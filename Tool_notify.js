@@ -1,7 +1,6 @@
 const axios = require('axios')
 
 barkID = process.env.BARKID
-barkID = `iyeuCNEfFuyaX4KHzemdoJ`
 
 function send(title, text = null, url = null) {
     let data = ''

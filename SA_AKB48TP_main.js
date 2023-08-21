@@ -16,7 +16,6 @@ class Run {
     constructor() {
         this.pageUrl = 'https://www.akb48teamtp.com/blogs/news'
         this.pageTag = 'AKB48TeamTP'
-        this.barkID = process.env.barkID
     }
 
     /**

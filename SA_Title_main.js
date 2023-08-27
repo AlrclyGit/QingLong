@@ -80,12 +80,8 @@ getTitles(urls).then(arr => {
         notify('欧名网站标题发生了变化')
     }
 }).catch(error => {
-    if (error.code = 'ENOENT') {
-        setDB(pageTag, newArray)
-        notify('欧名网站标题发生了变化')
-    } else {
-        console.log(error.message)
-    }
+    console.log(error.message)
+    notify('欧名网站标题发生了错误', error.message)
 })
 
 

@@ -25,8 +25,8 @@ class Run {
         axios.get(this.pageUrl)
             .then(response => {
                 const $ = cheerio.load(response.data)
-                this.title = $('#news > ul > li:nth-child(1) > a.title').html().trim()
-                let url = $('#news > ul > li:nth-child(1) > a.title').attr('href')
+                this.title = $('#news > ul > li:nth-child(2) > a.title').html().trim()
+                let url = $('#news > ul > li:nth-child(2) > a.title').attr('href')
                 this.url = url
                 return this.getJsonDB()
             }).then(jsonDB => {

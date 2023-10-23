@@ -14,7 +14,7 @@ class Run {
      * 设置属性 
      */
     constructor() {
-        this.pageUrl = 'https://www.akb48teamtp.com/blogs/news'
+        this.pageUrl = 'https://www.akb48teamtp.com/pages/news'
         this.pageTag = 'AKB48TeamTP'
     }
 
@@ -25,9 +25,9 @@ class Run {
         axios.get(this.pageUrl)
             .then(response => {
                 const $ = cheerio.load(response.data)
-                this.title = $('#blog_articles > div:nth-child(4) > p > a').html().trim()
-                let url = $('#blog_articles > div:nth-child(4) > p > a').attr('href')
-                this.url = `https://www.akb48teamtp.com${url}`
+                this.title = $('#news > ul > li:nth-child(1) > a.title').html().trim()
+                let url = $('#news > ul > li:nth-child(1) > a.title').attr('href')
+                this.url = url
                 return this.getJsonDB()
             }).then(jsonDB => {
                 let oldPage = jsonDB[this.pageTag]

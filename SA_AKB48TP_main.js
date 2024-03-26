@@ -6,7 +6,7 @@
 const axios = require("axios")
 const fs = require("fs")
 const cheerio = require("cheerio")
-const notify = require("./Tool_notify")
+const notify = require("./Tool_Message")
 
 class Run {
 
@@ -26,8 +26,7 @@ class Run {
             .then(response => {
                 const $ = cheerio.load(response.data)
                 this.title = $('#news > ul > li:nth-child(2) > a.title').html().trim()
-                let url = $('#news > ul > li:nth-child(2) > a.title').attr('href')
-                this.url = url
+                this.url = $('#news > ul > li:nth-child(2) > a.title').attr('href')
                 return this.getJsonDB()
             }).then(jsonDB => {
                 let oldPage = jsonDB[this.pageTag]

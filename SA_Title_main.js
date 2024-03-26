@@ -6,7 +6,7 @@
 const axios = require('axios')
 const fs = require("fs")
 const cheerio = require('cheerio')
-const notify = require("./Tool_notify")
+const notify = require("./Tool_Message")
 
 let pageTag = 'Title'
 let newArray = []
@@ -50,7 +50,7 @@ urls = [
     'https://www.ifhsc.com',
     'https://www.scuolaciao.com',
     'https://www.supdeluxe-recruiting.cn',
-    'https://www.sdabocconi-recruiting.cn',
+    // 'https://www.sdabocconi-recruiting.cn',
     'https://glion.ifhsc.com',
     'https://lr.ifhsc.com',
     'https://imi.ifhsc.com',

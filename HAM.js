@@ -36,11 +36,11 @@ async function getList() {
       console.log('湖北业余无线电无考试');
     } else {
       console.log('获取到业余无线电考试报名考试安排');
-      QLAPI.notify('获取到业余无线电考试报名考试安排', JSON.stringify(res.data));
+      QLAPI.systemNotify({ title: '获取到业余无线电考试报名考试安排', content: JSON.stringify(res.data) });
     }
   } catch (error) {
     console.error(`❗️  获取数据失败！\n${error}`);
-    QLAPI.notify('业余无线电考试报名监控', '接口请求失败');
+    QLAPI.systemNotify({ title: '业余无线电考试报名监控', content: '接口请求失败' });
   }
 }
 

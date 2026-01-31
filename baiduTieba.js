@@ -45,7 +45,7 @@ async function signInToTieba() {
     } else {
       //失败
       console.log('获取密钥失败');
-      QLAPI.notify('百度贴吧签到', '获取 tbs 失败');
+      QLAPI.systemNotify({ title: '百度贴吧签到', content: '获取 tbs 失败' });
       return;
     }
     // 获取用户所有关注贴吧
@@ -96,17 +96,17 @@ async function signInToTieba() {
           } else {
             console.log(signRes);
             console.log(`「${rotation}」签到失败`);
-            QLAPI.notify('百度贴吧签到', `「${rotation}」签到失败`);
+            QLAPI.systemNotify({ title: '百度贴吧签到', content: `「${rotation}」签到失败` });
           }
         } catch (error) {
           console.error(`❗️  运行错误！\n${error}`);
-          QLAPI.notify('百度贴吧签到', '百度贴吧签到运行错误！');
+          QLAPI.systemNotify({ title: '百度贴吧签到', content: '百度贴吧签到运行错误！' });
         }
       }
     }
   } catch (error) {
     console.error(`❗️  获取数据失败！\n${error}`);
-    QLAPI.notify('百度贴吧签到', '获取数据失败！');
+    QLAPI.systemNotify({ title: '百度贴吧签到', content: '获取数据失败！' });
   }
 }
 

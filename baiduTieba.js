@@ -16,7 +16,7 @@ const likeURL = 'https://tieba.baidu.com/mo/q/newmoindex';
 // 贴吧签到接口
 const signURL = 'http://c.tieba.baidu.com/c/c/forum/sign';
 // 登录令牌
-const tiebaCookie = process.env.BAIDUTBS;
+const tiebaCookie = 'BDUSS=' + process.env.BDUSS;
 
 // 未签到的贴吧列表
 let notSignIn = [];

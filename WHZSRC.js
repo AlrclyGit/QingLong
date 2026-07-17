@@ -1,19 +1,25 @@
 /**
  * 任务名称
- * name: 业余无线电考试报名
+ * name: 武汉掌上人才考试报名
  * 定时规则
  * cron: 23 * * * *
  */
 
 //
 const axios = require('axios');
-// 登录令牌
-const hamKey = process.env.HAMKEY;
+const fs = require('fs').promises;
+const path = require('path');
 //
-const whzsrcURL = 'https://www.whzsrc.com/hanpintong/procalmationAllLists?type=1&zxlb=178';
+const whzsrcURL = 'https://www.whzsrc.com/hanpintong/dev-api/page/site/notice/getNoticeList';
+const storageFile = path.join(__dirname, 'whzsrc_last_title.txt');
 async function getList() {
   // 构建请求体
-  const whzsrcData = {};
+  const whzsrcData = {
+    ggbt: '',
+    gglx: 1,
+    pageNum: 1,
+    PageSize: 10,
+  };
   // 设置请求头
   const whzsrcConfig = {
     headers: {
@@ -22,17 +28,42 @@ async function getList() {
   };
   //
   try {
-    const res = await axios.post(getListURL, whzsrcData, whzsrcConfig);
-    console.log(res.data.code);
-    // if (res.data.code === 10010) {
-    //   console.log('湖北业余无线电无考试');
-    // } else {
-    //   console.log('获取到业余无线电考试报名考试安排');
-    //   QLAPI.systemNotify({ title: '获取到业余无线电考试报名考试安排', content: JSON.stringify(res.data) });
-    // }
+    const res = await axios.post(whzsrcURL, whzsrcData, whzsrcConfig);
+    if (res.data.code === 200) {
+      let rowsOneTitle = res.data.rows[0].ggbt;
+      console.log('当前标题：', rowsOneTitle);
+
+      // 读取上次保存的标题
+      let lastTitle = '';
+      try {
+        lastTitle = await fs.readFile(storageFile, 'utf8');
+        console.log('上次保存的标题：', lastTitle);
+      } catch (readError) {
+        // 文件不存在是正常情况
+        console.log('首次运行，无上次保存的标题');
+      }
+      // 对比标题
+      if (lastTitle !== rowsOneTitle) {
+        console.log('标题发生变化！');
+        // 保存新标题
+        await fs.writeFile(storageFile, rowsOneTitle, 'utf8');
+        console.log('已保存新标题');
+        // 发送通知（如果有 QLAPI）
+        QLAPI.systemNotify({
+          title: '武汉掌上人才报名监控',
+          content: `标题已更新：${rowsOneTitle}`,
+        });
+      } else {
+        console.log('标题未发生变化');
+      }
+    } else {
+      console.error(`❗️获取数据失败！状态码：${res.data.code}`);
+
+      QLAPI.systemNotify({ title: '武汉掌上人才报名监控', content: '接口请求失败' });
+    }
   } catch (error) {
     console.error(`❗️获取数据失败！\n${error}`);
-    // QLAPI.systemNotify({ title: '业余无线电考试报名监控', content: '接口请求失败' });
+    QLAPI.systemNotify({ title: '武汉掌上人才报名监控', content: '接口请求失败' });
   }
 }
 

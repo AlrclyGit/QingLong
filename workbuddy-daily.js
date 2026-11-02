@@ -1,33 +1,10 @@
-#!/usr/bin/env node
 /**
- * WorkBuddy 每日签到 + 喵喵旅行（先领后派）—— 单文件版，零依赖。
- *
- * 只做两件事：
- *   1. Buddy 加油站每日签到（+100），今天签过就一个写请求都不发；
- *   2. 喵喵旅行：先领回程奖励，再派下一趟（顺序不能反，见下方说明）。
- *
- * 用法（青龙面板直接丢进脚本目录，cron 里调 `task workbuddy-daily.js`）：
- *   node workbuddy-daily.js              # 真跑一轮
- *   node workbuddy-daily.js --dry-run    # 只读演练，不发任何写请求
- *   node workbuddy-daily.js status       # 纯只读：看看今天什么状态
- *   node workbuddy-daily.js --json       # 机器可读输出
- *
- * 凭据（二选一）：
- *   A) 环境变量（青龙用这个）：
- *        WB_ACCESS_TOKEN  必填
- *        WB_REFRESH_TOKEN 强烈建议：access token 一个月就过期，有它才能自动续
- *        WB_UID           可选，账号 uid（有就带上，更稳）
- *        WB_DOMAIN        可选，默认 www.workbuddy.cn
- *   B) 多账号（青龙多账号用户）：
- *        WB_ACCOUNTS_JSON='[{"name":"号1","accessToken":"...","refreshToken":"...","uid":"..."}]'
- *      给了它就忽略 WB_ACCESS_TOKEN。
- *   C) 本机跑：什么都可以不设，自动读 ~/.dsh/workbuddy-vault/cn/*.json
- *
- * 退出码：0 成功（含"今天已做完"这类无操作） / 1 有账号失败 / 2 凭据或配置问题
- *
- * 只依赖 Node 内置模块，兼容 Node 14+（刻意不用 fetch / AbortSignal，青龙容器里
- * 的 Node 版本常常偏老）。
+ * 任务名称
+ * name: WorkBuddy 签到
+ * 定时规则
+ * cron: 0 10,17 * * *
  */
+
 'use strict';
 
 const fs = require('fs');

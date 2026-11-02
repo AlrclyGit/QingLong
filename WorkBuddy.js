@@ -12,12 +12,6 @@ const os = require('os');
 const path = require('path');
 const https = require('https');
 
-// ---------------------------------------------------------------------------
-// 上游常量（2026-11-02 真机核对）
-//   签到：POST https://www.codebuddy.cn/v2/billing/meter/...
-//   旅行：GET/POST https://www.workbuddy.cn/activity/growth/buddy/travel/
-//         注意 travel 这族没有 /v2 前缀，带 /v2 会 404。
-// ---------------------------------------------------------------------------
 const BILLING_BASE = 'https://www.codebuddy.cn';
 const TRAVEL_BASE = 'https://www.workbuddy.cn';
 const CHAT_BASE = 'https://copilot.tencent.com';
@@ -55,8 +49,19 @@ function makeLog() {
   const ts = () => {
     const d = new Date();
     const p = (n) => String(n).padStart(2, '0');
-    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' +
-      p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+    return (
+      d.getFullYear() +
+      '-' +
+      p(d.getMonth() + 1) +
+      '-' +
+      p(d.getDate()) +
+      ' ' +
+      p(d.getHours()) +
+      ':' +
+      p(d.getMinutes()) +
+      ':' +
+      p(d.getSeconds())
+    );
   };
   const emit = (tag, msg) => console.log('[' + ts() + '] ' + tag + ' ' + msg);
   return {
@@ -83,7 +88,9 @@ function makeLog() {
 const ISSUES = { failures: [], actions: [] };
 
 function notifyEnabled() {
-  const v = String(process.env.WB_NOTIFY || '').trim().toLowerCase();
+  const v = String(process.env.WB_NOTIFY || '')
+    .trim()
+    .toLowerCase();
   return v !== 'off' && v !== 'false' && v !== '0' && v !== 'no';
 }
 
@@ -126,7 +133,7 @@ function systemNotify(title, content) {
       (e) => {
         console.log('[NOTIFY] 推送失败：' + (e && e.message ? e.message : e));
         resolve(false);
-      },
+      }
     );
   });
 }
@@ -192,10 +199,10 @@ function requestJson(url, options) {
           const text = Buffer.concat(chunks).toString('utf8');
           resolve({ status: res.statusCode, text: text });
         });
-      },
+      }
     );
     req.on('timeout', () => {
-      req.destroy(new Error('请求超时（' + TIMEOUT_MS + 'ms）：' + url));
+      req.destroy(new Error('请求超时（' + TIMEOUT_MS + 'ms):' + url));
     });
     req.on('error', reject);
     if (body) req.write(body);
@@ -207,7 +214,9 @@ function requestJson(url, options) {
 // 凭据
 // ---------------------------------------------------------------------------
 function regionOfDomain(domain) {
-  const d = String(domain || '').trim().toLowerCase();
+  const d = String(domain || '')
+    .trim()
+    .toLowerCase();
   if (d === 'workbuddy.ai' || /\.workbuddy\.ai$/.test(d)) return 'global';
   if (d === 'codebuddy.ai' || /\.codebuddy\.ai$/.test(d)) return 'global';
   return 'cn';
@@ -243,14 +252,17 @@ function accountsFromEnv() {
   const token = process.env.WB_ACCESS_TOKEN;
   if (token && token.trim() !== '') {
     return [
-      normalizeAccount({
-        name: process.env.WB_NAME || undefined,
-        accessToken: token.trim(),
-        refreshToken: (process.env.WB_REFRESH_TOKEN || '').trim(),
-        uid: (process.env.WB_UID || '').trim(),
-        domain: (process.env.WB_DOMAIN || '').trim() || 'www.workbuddy.cn',
-        source: 'env',
-      }, 0),
+      normalizeAccount(
+        {
+          name: process.env.WB_NAME || undefined,
+          accessToken: token.trim(),
+          refreshToken: (process.env.WB_REFRESH_TOKEN || '').trim(),
+          uid: (process.env.WB_UID || '').trim(),
+          domain: (process.env.WB_DOMAIN || '').trim() || 'www.workbuddy.cn',
+          source: 'env',
+        },
+        0
+      ),
     ];
   }
   return null;
@@ -282,15 +294,18 @@ function accountsFromVault() {
         if (typeof auth.accessToken !== 'string' || auth.accessToken === '') return;
         const acc = doc.account || {};
         out.push(
-          normalizeAccount({
-            name: acc.nickname || doc.accountId,
-            accessToken: auth.accessToken,
-            refreshToken: auth.refreshToken || '',
-            uid: acc.uid || '',
-            domain: auth.domain || 'www.workbuddy.cn',
-            expiresAt: typeof auth.expiresAt === 'number' ? auth.expiresAt : 0,
-            source: 'vault:' + fp,
-          }, out.length),
+          normalizeAccount(
+            {
+              name: acc.nickname || doc.accountId,
+              accessToken: auth.accessToken,
+              refreshToken: auth.refreshToken || '',
+              uid: acc.uid || '',
+              domain: auth.domain || 'www.workbuddy.cn',
+              expiresAt: typeof auth.expiresAt === 'number' ? auth.expiresAt : 0,
+              source: 'vault:' + fp,
+            },
+            out.length
+          )
         );
       } catch (err) {
         /* 单个文件坏了不影响其他账号 */
@@ -313,8 +328,8 @@ function loadAccounts() {
 // ---------------------------------------------------------------------------
 function identityHeaders(acc) {
   const h = {
-    Authorization: 'Bearer ' + acc.accessToken,
-    Accept: 'application/json',
+    'Authorization': 'Bearer ' + acc.accessToken,
+    'Accept': 'application/json',
     'Content-Type': 'application/json',
     'User-Agent': USER_AGENT,
   };
@@ -435,10 +450,12 @@ function fetchBuddy(acc) {
 }
 
 function departTravel(acc, locationId) {
-  return callApi(acc, TRAVEL_BASE + '/activity/growth/buddy/travel/depart', 'POST', JSON.stringify({ location_id: locationId })).then((d) => {
-    const x = d && typeof d === 'object' ? d : {};
-    return { recordId: typeof x.record_id === 'number' ? x.record_id : 0, arriveAt: typeof x.arrive_at === 'number' ? x.arrive_at : 0 };
-  });
+  return callApi(acc, TRAVEL_BASE + '/activity/growth/buddy/travel/depart', 'POST', JSON.stringify({ location_id: locationId })).then(
+    (d) => {
+      const x = d && typeof d === 'object' ? d : {};
+      return { recordId: typeof x.record_id === 'number' ? x.record_id : 0, arriveAt: typeof x.arrive_at === 'number' ? x.arrive_at : 0 };
+    }
+  );
 }
 
 // 官方 Web 客户端就是空 body：服务端自己找那一条未领取的行程
@@ -455,9 +472,9 @@ function refreshToken(acc) {
     headers: {
       'X-Refresh-Token': acc.refreshToken,
       'X-Auth-Refresh-Source': 'workbuddy',
-      Accept: 'application/json',
-      Referer: BILLING_BASE + '/',
-      Origin: BILLING_BASE,
+      'Accept': 'application/json',
+      'Referer': BILLING_BASE + '/',
+      'Origin': BILLING_BASE,
       'User-Agent': USER_AGENT,
     },
   }).then((res) => {
@@ -493,8 +510,9 @@ function withCredential(acc, operation, log) {
       console.log('  WB_ACCESS_TOKEN=' + d.accessToken);
       if (rotatedRefresh) console.log('  WB_REFRESH_TOKEN=' + d.refreshToken);
       // 脚本改不了青龙的环境变量，这是一件必须人工做的事，随汇总通知一起推出去
-      collectAction(acc.name + '：token 已自动刷新，但旧 refresh token 已失效，' +
-        '请把日志里的 WB_ACCESS_TOKEN / WB_REFRESH_TOKEN 更新到青龙环境变量');
+      collectAction(
+        acc.name + '：token 已自动刷新，但旧 refresh token 已失效，' + '请把日志里的 WB_ACCESS_TOKEN / WB_REFRESH_TOKEN 更新到青龙环境变量'
+      );
       return operation();
     });
   });
@@ -520,7 +538,9 @@ function doCheckin(acc, opts, log) {
       if (st.todayCheckedIn) return Object.assign(base, { status: 'already', streakDays: st.streakDays, credit: st.todayCredit });
       if (opts.dryRun) return Object.assign(base, { status: 'would-claim', credit: st.dailyCredit, streakDays: st.streakDays });
       return claimCheckin(acc)
-        .then((c) => Object.assign(base, { status: 'claimed', credit: c.credit || st.dailyCredit, streakDays: c.streakDays || st.streakDays }))
+        .then((c) =>
+          Object.assign(base, { status: 'claimed', credit: c.credit || st.dailyCredit, streakDays: c.streakDays || st.streakDays })
+        )
         .catch((err) => {
           // 并发时另一端先领了：这是成功，不是失败
           const m = String(err.message || '');
@@ -544,9 +564,12 @@ function doTravel(acc, opts, log) {
         throw new Error('旅行状态没有 state 字段，拒绝猜测（缺字段不等于 idle）');
       }
       // ---- 第一步：有已到达的行程就先领 ----
-      const claimPhase = before.state === 'arrived'
-        ? (opts.dryRun
-            ? Promise.resolve(steps.push({ step: 'claim', status: 'would-claim', credit: before.rewardCredit, location: before.locationName }))
+      const claimPhase =
+        before.state === 'arrived'
+          ? opts.dryRun
+            ? Promise.resolve(
+                steps.push({ step: 'claim', status: 'would-claim', credit: before.rewardCredit, location: before.locationName })
+              )
             : claimTravel(acc)
                 .then((c) => {
                   credit = c.rewardCredit || before.rewardCredit;
@@ -556,8 +579,8 @@ function doTravel(acc, opts, log) {
                   const m = String(err.message || '');
                   if (m.indexOf('no unclaimed travel') !== -1) steps.push({ step: 'claim', status: 'already', credit: 0 });
                   else throw err;
-                }))
-        : Promise.resolve();
+                })
+          : Promise.resolve();
 
       return claimPhase.then(() => {
         // ---- 第二步：配额没花、也没人在路上，才派 ----
@@ -645,13 +668,16 @@ function describeTravel(row) {
   const parts = [];
   if (claim) {
     if (claim.status === 'claimed') parts.push('领取 +' + claim.credit + (claim.location ? '（' + claim.location + '）' : ''));
-    else if (claim.status === 'would-claim') parts.push('[演练] 可领取 +' + claim.credit + (claim.location ? '（' + claim.location + '）' : ''));
+    else if (claim.status === 'would-claim')
+      parts.push('[演练] 可领取 +' + claim.credit + (claim.location ? '（' + claim.location + '）' : ''));
     else if (claim.status === 'already') parts.push('奖励已被领过');
   }
   if (depart) {
-    if (depart.status === 'departed') parts.push('已派出（' + depart.location + (depart.arriveAt ? '，预计 ' + fmtTime(depart.arriveAt) + ' 归来' : '') + '）');
+    if (depart.status === 'departed')
+      parts.push('已派出（' + depart.location + (depart.arriveAt ? '，预计 ' + fmtTime(depart.arriveAt) + ' 归来' : '') + '）');
     else if (depart.status === 'would-depart') parts.push('[演练] 可派出（' + depart.location + '）');
-    else if (depart.reason === 'already traveling') parts.push('喵喵还在路上' + (depart.remainingSec > 0 ? '（约 ' + Math.ceil(depart.remainingSec / 60) + ' 分钟）' : ''));
+    else if (depart.reason === 'already traveling')
+      parts.push('喵喵还在路上' + (depart.remainingSec > 0 ? '（约 ' + Math.ceil(depart.remainingSec / 60) + ' 分钟）' : ''));
     else parts.push('未派出：' + depart.reason);
   }
   if (row.status === 'failed') parts.push('失败：' + row.message);
@@ -683,7 +709,7 @@ function main() {
   try {
     loaded = loadAccounts();
   } catch (e) {
-    log.info('WB_ACCOUNTS_JSON 应该是数组，例如：[{"name":"号1","accessToken":"...","refreshToken":"..."}]');
+    log.info('WB_ACCOUNTS_JSON 应该是数组，例如：[{"name":"号 1","accessToken":"...","refreshToken":"..."}]');
     return configFailure('凭据配置有误：' + e.message, log);
   }
   if (loaded.accounts.length === 0) {
@@ -693,9 +719,11 @@ function main() {
 
   // 国际版没有签到也没有成长中心
   const eligible = loaded.accounts.filter((a) => a.region === 'cn');
-  loaded.accounts.filter((a) => a.region !== 'cn').forEach((a) => {
-    log.warn(a.name + '：国际版没有签到/喵喵旅行，跳过');
-  });
+  loaded.accounts
+    .filter((a) => a.region !== 'cn')
+    .forEach((a) => {
+      log.warn(a.name + '：国际版没有签到/喵喵旅行，跳过');
+    });
   if (eligible.length === 0) {
     return configFailure('没有国内区账号可操作（签到与喵喵旅行只在 cn 区）。', log);
   }
@@ -717,8 +745,9 @@ function configFailure(message, log) {
     log.info('WB_NOTIFY=off，本次不推送通知');
     return Promise.resolve(EXIT_CONFIG);
   }
-  return systemNotify('WorkBuddy 签到需要处理配置', message + '\n\n时间：' +
-    new Date().toLocaleString('zh-CN', { hour12: false })).then(() => EXIT_CONFIG);
+  return systemNotify('WorkBuddy 签到需要处理配置', message + '\n\n时间：' + new Date().toLocaleString('zh-CN', { hour12: false })).then(
+    () => EXIT_CONFIG
+  );
 }
 
 function runStatus(eligible, opts, log) {
@@ -744,7 +773,7 @@ function runStatus(eligible, opts, log) {
             .catch((e) => {
               row.travelError = e.message;
               failed = true;
-            }),
+            })
         )
         .then(() => {
           rows.push(row);
@@ -755,8 +784,16 @@ function runStatus(eligible, opts, log) {
           } else {
             rows.forEach((r) => {
               if (r.checkin) {
-                log.info(r.account + '：' + (r.checkin.todayCheckedIn ? '今日已签到' : '今日未签到') +
-                  '（连续 ' + r.checkin.streakDays + ' 天，每日 +' + r.checkin.dailyCredit + '）');
+                log.info(
+                  r.account +
+                    '：' +
+                    (r.checkin.todayCheckedIn ? '今日已签到' : '今日未签到') +
+                    '（连续 ' +
+                    r.checkin.streakDays +
+                    ' 天，每日 +' +
+                    r.checkin.dailyCredit +
+                    '）'
+                );
               } else {
                 log.error(r.account + '：签到状态读不到 —— ' + r.checkinError);
               }
@@ -788,41 +825,44 @@ function runRun(eligible, opts, log) {
   const chain = eligible.reduce((p, acc) => {
     return p.then(() => {
       const entry = { account: acc.name };
-      const task = opts.only === 'travel'
-        ? Promise.resolve()
-        : doCheckin(acc, opts, log).then((row) => {
-            entry.checkin = row;
-            const text = describeCheckin(row);
+      const task =
+        opts.only === 'travel'
+          ? Promise.resolve()
+          : doCheckin(acc, opts, log).then((row) => {
+              entry.checkin = row;
+              const text = describeCheckin(row);
+              if (row.status === 'failed') {
+                failed = true;
+                log.error(acc.name + ' 签到 ' + text);
+                collectFailure(acc.name + ' 签到' + text);
+              } else if (row.status === 'claimed') {
+                totalCredit += row.credit || 0;
+                log.ok(acc.name + ' 签到 ' + text);
+              } else {
+                log.info(acc.name + ' 签到 ' + text);
+              }
+            });
+      return task
+        .then(() => {
+          if (opts.only === 'checkin') return;
+          return doTravel(acc, opts, log).then((row) => {
+            entry.travel = row;
+            const text = describeTravel(row);
             if (row.status === 'failed') {
               failed = true;
-              log.error(acc.name + ' 签到 ' + text);
-              collectFailure(acc.name + ' 签到' + text);
-            } else if (row.status === 'claimed') {
-              totalCredit += row.credit || 0;
-              log.ok(acc.name + ' 签到 ' + text);
+              log.error(acc.name + ' 喵喵 ' + text);
+              collectFailure(acc.name + ' 喵喵' + text);
+            } else if (row.credit > 0) {
+              totalCredit += row.credit;
+              log.ok(acc.name + ' 喵喵 ' + text);
             } else {
-              log.info(acc.name + ' 签到 ' + text);
+              log.info(acc.name + ' 喵喵 ' + text);
             }
           });
-      return task.then(() => {
-        if (opts.only === 'checkin') return;
-        return doTravel(acc, opts, log).then((row) => {
-          entry.travel = row;
-          const text = describeTravel(row);
-          if (row.status === 'failed') {
-            failed = true;
-            log.error(acc.name + ' 喵喵 ' + text);
-            collectFailure(acc.name + ' 喵喵' + text);
-          } else if (row.credit > 0) {
-            totalCredit += row.credit;
-            log.ok(acc.name + ' 喵喵 ' + text);
-          } else {
-            log.info(acc.name + ' 喵喵 ' + text);
-          }
+        })
+        .then(() => {
+          results.push(entry);
         });
-      }).then(() => {
-        results.push(entry);
-      });
     });
   }, Promise.resolve());
 
@@ -848,5 +888,5 @@ Promise.resolve(code).then(
   (e) => {
     console.log('[FATAL] ' + (e && e.stack ? e.stack : e));
     process.exit(EXIT_FAILED);
-  },
+  }
 );

@@ -444,10 +444,15 @@ function systemNotify(title, content) {
   }
 
   log('==================== 执行完毕 ====================');
-  const content = results.map((r) => `${r.label}: ${r.ok ? '✅' : '❌'} ${r.detail.join('；')}`).join('\n');
+  const failed = results.filter((r) => !r.ok);
+  if (failed.length === 0) {
+    log('所有账号签到正常，跳过通知推送');
+    return;
+  }
+  const content = failed.map((r) => `${r.label}: ❌ ${r.detail.join('；')}`).join('\n');
   console.log(content);
 
-  systemNotify('天翼云云智签到', content);
+  systemNotify('天翼云云智签到失败', content);
 })().catch((e) => {
   log('脚本运行异常: ' + (e && e.stack ? e.stack : e));
   process.exit(1);

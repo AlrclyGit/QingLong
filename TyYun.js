@@ -141,6 +141,30 @@ function parseAccounts() {
     log('未检测到环境变量 EAI_COOKIE，请先在青龙「环境变量」里添加。');
     process.exit(0);
   }
+
+  // ① 整段就是一个 JSON（支持多行 + 尾随逗号）：单账号对象 或 多账号数组
+  try {
+    const j = JSON.parse(raw.replace(/,\s*([}\]])/g, '$1')); // 去掉 JS 风格尾随逗号
+    const items = Array.isArray(j) ? j : [j];
+    if (items.length && items.every((o) => o && typeof o === 'object' && (o.cookie || o.skcache || o.sk))) {
+      return items.map((o, idx) => {
+        const acc = { label: `账号${idx + 1}`, cookie: o.cookie || '', jwt: o.jwt || '', sk: o.sk || '', tenantId: o.tenantId || '', ua: o.ua || '' };
+        if (!acc.sk && o.skcache && o.clientKey) {
+          try {
+            acc.sk = deriveSk(o.skcache, o.clientKey);
+            log(`${acc.label}: 已由 skcache+clientKey 解出签名密钥 sk`);
+          } catch (e) {
+            log(`${acc.label}: sk 解密失败（${e.message}），本次以无签名方式请求`);
+          }
+        }
+        acc.jwt = acc.jwt || getCookieValue(acc.cookie, 'YL-Authorization');
+        acc.xuid = 'pubweb_' + uuid();
+        return acc;
+      });
+    }
+  } catch (e) { /* 非整体 JSON，继续下面的兼容解析 */ }
+
+  // ② 兼容 cURL / 按行 / 纯 Cookie 串
   // 先拼接 cURL 续行；识别规则：
   //   以 curl 开头 → 新账号（整段 cURL，不按 & 拆分）
   //   以 -H/--url 等参数开头 → 并回上一条 cURL（粘贴时续行被拆散的情况）

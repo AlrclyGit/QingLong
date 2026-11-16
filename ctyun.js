@@ -1,23 +1,6 @@
 /**
- * 脚本名称: 天翼云云智助手（eaichat）Token 中心每日签到
- * 脚本功能: 自动完成 https://eaichat.ctyun.cn/chat/#/aitoken 页面的「每日签到」（每日约 20 万 Token），
- *          并可顺手领取其它处于“可领取”状态的 Token 任务奖励
- * 适配环境: 青龙面板（Node.js）/ 本地 Node.js >= 14，零第三方依赖（仅用内置模块）
- *
- * 环境变量:
- *   EAI_COOKIE       必填。账号凭证，多账号用换行或 & 分隔。每个账号三种写法：
- *                      1) 【推荐】直接粘贴浏览器 Copy as cURL 整段（含 HttpOnly Cookie，最可靠）：
- *                         F12 -> Network -> 找到任意 /ai/portal/ 请求 -> 右键 -> Copy as cURL (bash) -> 整段贴入
- *                      2) 直接填浏览器完整 Cookie 字符串（从 F12 -> Network -> 请求头 Cookie 里复制）
- *                      3) JSON 格式，便于补充签名字段：
- *                         {"cookie":"...","jwt":"...","skcache":"...","clientKey":"...","tenantId":"...","sk":"..."}
- *                         skcache / clientKey 来自浏览器 localStorage（控制台执行 README 里的提取代码即可）；
- *                         两者齐全时脚本自动解出 sk 并携带 Web-Signature 签名头。也可以直接给 sk。
- *   EAI_CLAIM_TASKS  选填，true/false，是否顺手领取其它可领取的任务奖励，默认 true
- *
- * 定时建议: 15 8 * * *   （每天 08:15，可自行调整）
- *
- * 通知: 兼容青龙 sendNotify（放在脚本同目录或 /ql/data/scripts/ 下自动调用）
+ * name: 天翼云云智助手
+ * cron:  15 8 * * *
  */
 'use strict';
 
@@ -34,8 +17,7 @@ const API_TASK_LIST = '/ai/portal/wenc/v1/cp/mgr/api/openApi/marketing/api/userP
 const API_RECEIVE = '/ai/portal/wenc/v1/cp/mgr/api/openApi/marketing/api/userPoints/receivePointsV2';
 const CHECKIN_TASK_ID = 3001; // 「每日签到」任务 ID（前端写死）
 const APP_VERSION = '202060605'; // x-eai-version / YL-Main-Version
-const USER_AGENT =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
+const USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36';
 const REQUEST_TIMEOUT = 20000;
 
 /* ============================== 工具函数 ============================== */
@@ -173,11 +155,11 @@ function parseAccounts() {
 
 function buildHeaders(acc, params) {
   const headers = {
-    Accept: 'application/json, text/plain, */*',
+    'Accept': 'application/json, text/plain, */*',
     'User-Agent': USER_AGENT,
     'x-user-agent': USER_AGENT,
-    Referer: BASE_URL + '/chat/',
-    Origin: BASE_URL,
+    'Referer': BASE_URL + '/chat/',
+    'Origin': BASE_URL,
     'x-client-trace-id': uuid(),
     'x-eai-xuid': acc.xuid,
     'x-eai-env': 'pubWeb',
@@ -205,10 +187,10 @@ function buildHeaders(acc, params) {
 /** 两层返回码解包：{ resultCode, data: { code, data, msg } } */
 function unwrap(resp) {
   if (!resp || typeof resp !== 'object') return { ok: false, msg: '接口返回为空' };
-  if (resp.resultCode !== 0) return { ok: false, msg: resp.resultMsg || resp.msg || ('外层 resultCode=' + resp.resultCode) };
+  if (resp.resultCode !== 0) return { ok: false, msg: resp.resultMsg || resp.msg || '外层 resultCode=' + resp.resultCode };
   const inner = resp.data;
   if (!inner || typeof inner !== 'object') return { ok: false, msg: '接口 data 为空' };
-  if (inner.code !== 0) return { ok: false, msg: inner.msg || ('内层 code=' + inner.code) };
+  if (inner.code !== 0) return { ok: false, msg: inner.msg || '内层 code=' + inner.code };
   return { ok: true, data: inner.data };
 }
 
@@ -217,8 +199,10 @@ function fmtReward(task) {
   try {
     const list = task && task.pointsList;
     const hit = Array.isArray(list) ? list.find((p) => p && p.type === 600) : null;
-    if (hit && typeof hit.value === 'number') return (hit.value / 1e4) + ' 万Token';
-  } catch (e) { /* ignore */ }
+    if (hit && typeof hit.value === 'number') return hit.value / 1e4 + ' 万Token';
+  } catch (e) {
+    /* ignore */
+  }
   return '';
 }
 
@@ -233,7 +217,11 @@ async function callApi(acc, path, params) {
     try {
       const res = await httpGet(url, buildHeaders(acc, params));
       if (res.status === 401) {
-        return { ok: false, authExpired: true, msg: 'HTTP 401 未授权（Cookie/JWT 已失效）' + (res.body ? '：' + res.body.slice(0, 60) : '') };
+        return {
+          ok: false,
+          authExpired: true,
+          msg: 'HTTP 401 未授权（Cookie/JWT 已失效）' + (res.body ? '：' + res.body.slice(0, 60) : ''),
+        };
       }
       if (res.status !== 200) {
         lastErr = new Error('HTTP ' + res.status);
@@ -345,7 +333,9 @@ function loadNotify() {
     try {
       const mod = require(p);
       return typeof mod === 'function' ? mod : mod.sendNotify || null;
-    } catch (e) { /* 未安装则跳过 */ }
+    } catch (e) {
+      /* 未安装则跳过 */
+    }
   }
   return null;
 }
@@ -364,9 +354,7 @@ function loadNotify() {
   }
 
   log('==================== 执行完毕 ====================');
-  const content = results
-    .map((r) => `${r.label}: ${r.ok ? '✅' : '❌'} ${r.detail.join('；')}`)
-    .join('\n');
+  const content = results.map((r) => `${r.label}: ${r.ok ? '✅' : '❌'} ${r.detail.join('；')}`).join('\n');
   console.log(content);
 
   const notify = loadNotify();

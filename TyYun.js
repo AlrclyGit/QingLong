@@ -141,31 +141,58 @@ function parseAccounts() {
     log('未检测到环境变量 EAI_COOKIE，请先在青龙「环境变量」里添加。');
     process.exit(0);
   }
-  // 先拼接 cURL 续行；整段 cURL 不按 & 拆分，其余行支持用 & 分隔多账号
+  // 先拼接 cURL 续行；识别规则：
+  //   以 curl 开头 → 新账号（整段 cURL，不按 & 拆分）
+  //   以 -H/--url 等参数开头 → 并回上一条 cURL（粘贴时续行被拆散的情况）
+  //   以 { 开头且上一条是 cURL → 作为该账号的 JSON 补充（skcache/clientKey 等）
+  //   其余 → 普通 Cookie 行，支持用 & 分隔多账号
   const joined = raw.replace(/[\^\\`]\s*\r?\n/g, ' ');
   const entries = [];
   for (const line of joined.split(/\r?\n/)) {
     const s = line.trim();
     if (!s) continue;
-    if (/^curl\s/.test(s)) entries.push(s);
-    else entries.push(...s.split('&').map((x) => x.trim()).filter(Boolean));
+    const prev = entries[entries.length - 1];
+    if (/^curl[\s"']/.test(s)) {
+      entries.push(s);
+    } else if (/^-{1,2}[A-Za-z]/.test(s)) {
+      if (prev && /^curl[\s"']/.test(prev)) entries[entries.length - 1] = prev + ' ' + s;
+      else log('忽略无法识别的行（疑似 cURL 参数但找不到命令头）：' + s.slice(0, 50));
+    } else if (s.startsWith('{') && prev && /^curl[\s"']/.test(prev)) {
+      entries[entries.length - 1] = prev + '\n' + s;
+    } else {
+      entries.push(...s.split('&').map((x) => x.trim()).filter(Boolean));
+    }
   }
   return entries.map((entry, idx) => {
     let acc = { label: `账号${idx + 1}`, cookie: '', jwt: '', sk: '', tenantId: '', ua: '' };
-    if (/^curl\s/.test(entry)) {
-      const c = parseCurlEntry(entry);
+    // 拆出 cURL 后面附带的 JSON 补充行
+    let main = entry;
+    let jsonExtra = '';
+    const nl = entry.indexOf('\n{');
+    if (nl > -1) {
+      main = entry.slice(0, nl);
+      jsonExtra = entry.slice(nl + 1);
+    }
+    if (/^curl\s/.test(main)) {
+      const c = parseCurlEntry(main);
       acc.cookie = c.cookie;
       acc.jwt = c.jwt;
       acc.tenantId = c.tenantId;
       acc.ua = c.ua;
       if (!acc.cookie && !acc.jwt) log(`${acc.label}: cURL 里未解析出 Cookie/JWT，请确认复制的是 /ai/portal/ 请求的 Copy as cURL`);
-    } else if (entry.startsWith('{')) {
+    } else if (main.startsWith('{')) {
+      jsonExtra = main;
+      main = '';
+    } else {
+      acc.cookie = main;
+    }
+    if (jsonExtra) {
       try {
-        const j = JSON.parse(entry);
-        acc.cookie = j.cookie || '';
-        acc.jwt = j.jwt || '';
-        acc.sk = j.sk || '';
-        acc.tenantId = j.tenantId || '';
+        const j = JSON.parse(jsonExtra);
+        acc.cookie = acc.cookie || j.cookie || '';
+        acc.jwt = acc.jwt || j.jwt || '';
+        acc.sk = acc.sk || j.sk || '';
+        acc.tenantId = acc.tenantId || j.tenantId || '';
         if (!acc.sk && j.skcache && j.clientKey) {
           try {
             acc.sk = deriveSk(j.skcache, j.clientKey);
@@ -175,11 +202,8 @@ function parseAccounts() {
           }
         }
       } catch (e) {
-        log(`${acc.label}: JSON 解析失败，按纯 Cookie 处理`);
-        acc.cookie = entry;
+        log(`${acc.label}: JSON 补充行解析失败：${e.message}`);
       }
-    } else {
-      acc.cookie = entry;
     }
     acc.jwt = acc.jwt || getCookieValue(acc.cookie, 'YL-Authorization');
     acc.xuid = 'pubweb_' + uuid();
@@ -299,7 +323,7 @@ async function runAccount(acc, index, total, claimTasks) {
   // 1. 获取任务列表
   const list = await callApi(acc, API_TASK_LIST, { displayTypes: 5 });
   if (!list.ok) {
-    if (list.authExpired) log(`${acc.label}: 登录已失效，请重新抓取 Cookie 更新环境变量`);
+    if (list.authExpired) log(`${acc.label}: 鉴权失败 - ${list.msg}（多为缺少 sk 签名或 Cookie 失效）`);
     else log(`${acc.label}: 获取任务列表失败 - ${list.msg}`);
     summary.ok = false;
     summary.detail.push('获取任务列表失败：' + list.msg);
@@ -384,6 +408,10 @@ function systemNotify(title, content) {
   const claimTasks = String(process.env.EAI_CLAIM_TASKS || 'true').toLowerCase() !== 'false';
   const accounts = parseAccounts();
   log(`共检测到 ${accounts.length} 个账号，任务奖励顺手领取：${claimTasks ? '开' : '关'}`);
+  const noSk = accounts.filter((a) => !a.sk).length;
+  if (noSk) {
+    log(`⚠️ 有 ${noSk} 个账号未配置 sk（skcache+clientKey）：wenc 网关强制校验 web-signature，缺 sk 会 401，请用 JSON 写法补充`);
+  }
 
   const results = [];
   for (let i = 0; i < accounts.length; i++) {

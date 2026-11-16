@@ -111,19 +111,55 @@ function getCookieValue(cookieStr, name) {
   return m ? decodeURIComponent(m[1]) : '';
 }
 
+/** 解析浏览器 Copy as cURL 整段命令，提取 Cookie / JWT / UA / tenantId（含 HttpOnly Cookie，最可靠） */
+function parseCurlEntry(entry) {
+  const s = entry.replace(/[\^\\]\s*\r?\n/g, ' '); // 拼接 bash \ 或 cmd ^ 续行
+  const out = { cookie: '', jwt: '', tenantId: '', ua: '' };
+  const argRe = /(?:^|\s)(-H|--header|-b|--cookie|-A|--user-agent)\s+(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|([^\s]+))/g;
+  let m;
+  while ((m = argRe.exec(s))) {
+    let val = m[2] !== undefined ? m[2] : m[3] !== undefined ? m[3] : m[4];
+    val = val.replace(/\\'/g, "'").replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+    const flag = m[1];
+    if (flag === '-b' || flag === '--cookie') { out.cookie = val; continue; }
+    if (flag === '-A' || flag === '--user-agent') { out.ua = val; continue; }
+    const i = val.indexOf(':');
+    if (i < 0) continue;
+    const name = val.slice(0, i).trim().toLowerCase();
+    const v = val.slice(i + 1).trim();
+    if (name === 'cookie') out.cookie = v;
+    else if (name === 'yl-authorization' || name === 'authorization') out.jwt = v;
+    else if (name === 'x-eai-tenant-id') out.tenantId = v;
+    else if (name === 'user-agent') out.ua = out.ua || v;
+  }
+  return out;
+}
+
 function parseAccounts() {
   const raw = process.env.EAI_COOKIE || process.env.eaichatCookie || '';
   if (!raw.trim()) {
     log('未检测到环境变量 EAI_COOKIE，请先在青龙「环境变量」里添加。');
     process.exit(0);
   }
-  const entries = raw
-    .split(/\r?\n|&/)
-    .map((s) => s.trim())
-    .filter(Boolean);
+  // 先拼接 cURL 续行；整段 cURL 不按 & 拆分，其余行支持用 & 分隔多账号
+  const joined = raw.replace(/[\^\\]\s*\r?\n/g, ' ');
+  const entries = [];
+  for (const line of joined.split(/\r?\n/)) {
+    const s = line.trim();
+    if (!s) continue;
+    if (/^curl\s/.test(s)) entries.push(s);
+    else entries.push(...s.split('&').map((x) => x.trim()).filter(Boolean));
+  }
   return entries.map((entry, idx) => {
-    let acc = { label: `账号${idx + 1}`, cookie: '', jwt: '', sk: '', tenantId: '' };
-    if (entry.startsWith('{')) {
+    let acc = { label: `账号${idx + 1}`, cookie: '', jwt: '', sk: '', tenantId: '', ua: '' };
+    if (/^curl\s/.test(entry)) {
+      const c = parseCurlEntry(entry);
+      acc.cookie = c.cookie;
+      acc.jwt = c.jwt;
+      acc.tenantId = c.tenantId;
+      acc.ua = c.ua;
+      if (!acc.cookie && !acc.jwt) log(`${acc.label}: cURL 里未解析出 Cookie/JWT，请确认复制的是 /ai/portal/ 请求的 Copy as cURL`);
+    } else if (entry.startsWith('{')) {
       try {
         const j = JSON.parse(entry);
         acc.cookie = j.cookie || '';
@@ -154,10 +190,11 @@ function parseAccounts() {
 /* ============================== 请求头（复刻网页端） ============================== */
 
 function buildHeaders(acc, params) {
+  const ua = acc.ua || USER_AGENT;
   const headers = {
     'Accept': 'application/json, text/plain, */*',
-    'User-Agent': USER_AGENT,
-    'x-user-agent': USER_AGENT,
+    'User-Agent': ua,
+    'x-user-agent': ua,
     'Referer': BASE_URL + '/chat/',
     'Origin': BASE_URL,
     'x-client-trace-id': uuid(),
@@ -327,17 +364,18 @@ async function runAccount(acc, index, total, claimTasks) {
 
 /* ============================== 通知 ============================== */
 
-function loadNotify() {
-  const candidates = ['./sendNotify', '../sendNotify', '/ql/data/scripts/sendNotify', '/ql/data/config/sendNotify'];
-  for (const p of candidates) {
-    try {
-      const mod = require(p);
-      return typeof mod === 'function' ? mod : mod.sendNotify || null;
-    } catch (e) {
-      /* 未安装则跳过 */
+/** 青龙系统推送 */
+function systemNotify(title, content) {
+  try {
+    console.log(title);
+    if (typeof QLAPI !== 'undefined' && QLAPI && typeof QLAPI.systemNotify === 'function') {
+      QLAPI.systemNotify({ title, content });
+    } else {
+      log('当前环境没有 QLAPI.systemNotify（非青龙运行？），跳过通知推送');
     }
+  } catch (e) {
+    log('通知推送失败: ' + e.message);
   }
-  return null;
 }
 
 /* ============================== 主流程 ============================== */
@@ -357,15 +395,7 @@ function loadNotify() {
   const content = results.map((r) => `${r.label}: ${r.ok ? '✅' : '❌'} ${r.detail.join('；')}`).join('\n');
   console.log(content);
 
-  const notify = loadNotify();
-  if (notify) {
-    try {
-      await notify('天翼云云智助手签到', content);
-      log('已发送通知');
-    } catch (e) {
-      log('通知发送失败: ' + e.message);
-    }
-  }
+  systemNotify('天翼云云智签到', content);
 })().catch((e) => {
   log('脚本运行异常: ' + (e && e.stack ? e.stack : e));
   process.exit(1);

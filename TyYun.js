@@ -113,7 +113,7 @@ function getCookieValue(cookieStr, name) {
 
 /** 解析浏览器 Copy as cURL 整段命令，提取 Cookie / JWT / UA / tenantId（含 HttpOnly Cookie，最可靠） */
 function parseCurlEntry(entry) {
-  const s = entry.replace(/[\^\\]\s*\r?\n/g, ' '); // 拼接 bash \ 或 cmd ^ 续行
+  const s = entry.replace(/[\^\\`]\s*\r?\n/g, ' '); // 拼接 bash \ / cmd ^ / PowerShell ` 续行
   const out = { cookie: '', jwt: '', tenantId: '', ua: '' };
   const argRe = /(?:^|\s)(-H|--header|-b|--cookie|-A|--user-agent)\s+(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|([^\s]+))/g;
   let m;
@@ -142,7 +142,7 @@ function parseAccounts() {
     process.exit(0);
   }
   // 先拼接 cURL 续行；整段 cURL 不按 & 拆分，其余行支持用 & 分隔多账号
-  const joined = raw.replace(/[\^\\]\s*\r?\n/g, ' ');
+  const joined = raw.replace(/[\^\\`]\s*\r?\n/g, ' ');
   const entries = [];
   for (const line of joined.split(/\r?\n/)) {
     const s = line.trim();
